@@ -27,14 +27,15 @@ public class MainFrame {
     private static final int BUTTON_LEFT = 1;
     private static final int BUTTON_RIGHT= 2;
 
-    private static final int BOX_SIZE = 18;
+    private static int TALE_SIZE = 25;
     private static final int BORDER_SIZE = 1;
-    private static final int HEIGHT = 40;
-    private static final int WIDTH = 40;
+    private static int HEIGHT = 20;
+    private static int WIDTH = 20;
+
     private static final int CANVAS_OFFSET = 60;
 
     private final AtomicInteger clicked;
-    private final BoxType[][] grid;
+    private BoxType[][] grid;
 
     private final Map<BoxType, Color> colorMap;
     private final Map<ButtonModel, BoxType> radioButtonMap;
@@ -62,18 +63,23 @@ public class MainFrame {
             for (int i = 0; i < MainFrame.HEIGHT; i++) {
                 for (int j = 0; j < MainFrame.WIDTH; j++) {
                     g.setColor(colorMap.get(grid[i][j]));
-                    g.fillRect(xOff, yOff, BOX_SIZE - BORDER_SIZE, BOX_SIZE - BORDER_SIZE);
-                    xOff += BOX_SIZE;
+                    g.fillRect(xOff, yOff, TALE_SIZE - BORDER_SIZE, TALE_SIZE - BORDER_SIZE);
+                    xOff += TALE_SIZE;
                 }
                 xOff = 0;
-                yOff += BOX_SIZE;
+                yOff += TALE_SIZE;
             }
         }
     }
+    private int tempWidth;
+    private int tempHeight;
+    private int tempTaleSize;
 
     public MainFrame() {
 
-        grid = new BoxType[HEIGHT][WIDTH];
+        tempWidth = 0;
+        tempHeight = 0;
+        tempTaleSize = 0;
 
         clicked = new AtomicInteger(0);
         colorMap = new HashMap<>();
@@ -95,12 +101,9 @@ public class MainFrame {
         comboBoxMap.put("Dijkstra", new Dijkstra());
         comboBoxMap.put("BellmanFord", new BellmanFord());
 
-        int w = (BOX_SIZE * WIDTH) + 25;
-        int h = (BOX_SIZE * HEIGHT) + CANVAS_OFFSET + 40;
-
         frame = new JFrame();
         frame.setTitle("Path Finding");
-        frame.setSize(Integer.max(w, 480), h);
+        setFrameSize();
         frame.setFocusable(true);
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -108,10 +111,15 @@ public class MainFrame {
         startPoint.setLocation(2 ,2);
         endPoint.setLocation(4 , 4);
 
-        initGrid();
         initialize();
 
         frame.setVisible(true);
+    }
+
+    private void setFrameSize(){
+        int w = (TALE_SIZE * WIDTH) + 125;
+        int h = (TALE_SIZE * HEIGHT) + CANVAS_OFFSET + 60;
+        frame.setSize(Integer.max(w, 480), h);
     }
 
     private void initGrid(){
@@ -122,9 +130,23 @@ public class MainFrame {
         grid[endPoint.y][endPoint.x] = BoxType.BOX_TYPE_END;
     }
 
+    private void applyFrameChange(JPanel panel){
+        if (tempWidth == 0 && tempHeight == 0 && tempTaleSize == 0)
+            return;
+
+        WIDTH = tempWidth == 0 ? WIDTH : tempWidth;
+        HEIGHT = tempHeight == 0 ? HEIGHT : tempHeight;
+        TALE_SIZE = tempTaleSize == 0 ? TALE_SIZE : tempTaleSize;
+        tempWidth = tempHeight = tempTaleSize = 0;
+        frame.remove(panel);
+        initialize();
+        setFrameSize();
+    }
+
     private void initialize() {
         JPanel panel = new JPanel();
-
+        grid = new BoxType[HEIGHT][WIDTH];
+        initGrid();
         // Add top shelf components
         String[] keys = comboBoxMap.keySet().toArray(new String[0]);
         combo = new JComboBox<>(keys);
@@ -158,8 +180,52 @@ public class MainFrame {
         resultField.setFont(new Font(resultField.getFont().getName(), Font.PLAIN, 20));
         panel.add(resultField);
 
+        int spinnerX = (WIDTH * TALE_SIZE) + 10;
+
+        JTextField[] spinnerFields = new JTextField[3];
+        spinnerFields[0] = new JTextField("Width");
+        spinnerFields[0].setFont(new Font(spinnerFields[0].getFont().getName(), Font.PLAIN, 10));
+        spinnerFields[0].setBounds(spinnerX, 60, 80, 18);
+        spinnerFields[0].setOpaque(true);
+        spinnerFields[0].setEditable(false);
+
+        spinnerFields[1] = new JTextField("Height");
+        spinnerFields[1].setFont(new Font(spinnerFields[1].getFont().getName(), Font.PLAIN, 10));
+        spinnerFields[1].setBounds(spinnerX, 120, 80, 18);
+        spinnerFields[1].setOpaque(true);
+        spinnerFields[1].setEditable(false);
+
+        spinnerFields[2] = new JTextField("Tale Size");
+        spinnerFields[2].setFont(new Font(spinnerFields[2].getFont().getName(), Font.PLAIN, 10));
+        spinnerFields[2].setBounds(spinnerX, 170, 80, 18);
+        spinnerFields[2].setOpaque(true);
+        spinnerFields[2].setEditable(false);
+
+        for (JTextField f : spinnerFields)
+            panel.add(f);
+
+        JSpinner widthSpinner = new JSpinner(new SpinnerNumberModel(WIDTH, 5, 75, 1));
+        widthSpinner.addChangeListener(e -> tempWidth = (int) widthSpinner.getValue());
+        widthSpinner.setBounds(spinnerX, 80, 80, 25);
+        panel.add(widthSpinner);
+
+        JSpinner heightSpinner = new JSpinner(new SpinnerNumberModel(HEIGHT, 5, 50, 1));
+        heightSpinner.addChangeListener(e -> tempHeight = (int) heightSpinner.getValue());
+        heightSpinner.setBounds(spinnerX, 140, 80, 25);
+        panel.add(heightSpinner);
+
+        JSpinner taleSizeSpinner = new JSpinner(new SpinnerNumberModel(TALE_SIZE, 10, 25, 1));
+        taleSizeSpinner.addChangeListener(e -> tempTaleSize = (int) taleSizeSpinner.getValue());
+        taleSizeSpinner.setBounds(spinnerX, 190, 80, 25);
+        panel.add(taleSizeSpinner);
+
+        JButton applyButton = new JButton("Apply");
+        applyButton.setBounds(spinnerX, 240, 80, 40);
+        applyButton.addActionListener(e -> applyFrameChange(panel));
+        panel.add(applyButton);
+
         PathCanvas canvas = new PathCanvas();
-        canvas.setBounds(5, CANVAS_OFFSET, WIDTH * BOX_SIZE, HEIGHT * BOX_SIZE);
+        canvas.setBounds(5, CANVAS_OFFSET, WIDTH * TALE_SIZE, HEIGHT * TALE_SIZE);
         panel.add(canvas);
 
         // Add panel to frame
@@ -265,11 +331,11 @@ public class MainFrame {
     private void setBox(MouseEvent e, boolean drag){
         int x = e.getX();
         int y = e.getY() - CANVAS_OFFSET;
-        boolean inBounds = (x >= 0 && x < WIDTH * BOX_SIZE) && (y >= 0 && y < HEIGHT * BOX_SIZE);
+        boolean inBounds = (x >= 0 && x < WIDTH * TALE_SIZE) && (y >= 0 && y < HEIGHT * TALE_SIZE);
 
         if (inBounds) {
-            x = x / BOX_SIZE;
-            y = y / BOX_SIZE;
+            x = x / TALE_SIZE;
+            y = y / TALE_SIZE;
 
             if (clicked.get() == BUTTON_LEFT){
                 if (grid[y][x] == BoxType.BOX_TYPE_NONE || grid[y][x] == BoxType.BOX_TYPE_PATH) {
@@ -314,13 +380,13 @@ public class MainFrame {
         Graph g = new Graph(grid);
         algo.solve(g, start);
         if (algo.checkPath(end)) {
-            resultField.setText("Path has been found and marked");
             List<Integer> backtrace = algo.getBacktrace(start, end);
             markPath(backtrace);
+            resultField.setForeground(Color.black);
+            resultField.setText("Path has been found and marked. Path distance: " + backtrace.size());
         } else {
             resultField.setForeground(Color.red);
             resultField.setText("NO PATH FOUND");
-            resultField.setForeground(Color.black);
         }
     }
 

@@ -36,12 +36,11 @@ public class Dijkstra implements PathFindingAlgorithm{
 
         distance[start] = 0;
 
-        int count = 0;
         int current = getMinDistanceNode();
         // Current can be -1, distance array contains all possible nodes of the grid specification.
         // A better solution would be to implement this functionality with Maps instead of array indexing.
         // This works for a func project
-        while (count < g.getVertexCount() && current != -1){
+        while (current != -1){
             visited[current] = true;
             for (int neigh : g.getNeighborsList(current)){
                 int temp = distance[current] + 1;
@@ -69,7 +68,7 @@ public class Dijkstra implements PathFindingAlgorithm{
 
     @Override
     public boolean checkPath(int end) {
-        return distance[end] < INF;
+        return visited[end];
     }
 
     @Override
