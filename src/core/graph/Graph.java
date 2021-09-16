@@ -31,16 +31,16 @@ public class Graph {
         if (diagonal){
             for (int i = -1; i <= 1; i++)
                 for (int j = -1; j <= 1; j++)
-                    checkNode(i, j, x, y, grid);
+                    addNode(i, j, x, y, grid);
         } else {
-            checkNode(0, -1, x, y, grid);
-            checkNode(-1, 0, x, y, grid);
-            checkNode(0, 1, x, y, grid);
-            checkNode(1, 0, x, y, grid);
+            addNode(0, -1, x, y, grid);
+            addNode(-1, 0, x, y, grid);
+            addNode(0, 1, x, y, grid);
+            addNode(1, 0, x, y, grid);
         }
     }
 
-    private void checkNode(int i, int j, int x, int y, boolean[][] grid){
+    private void addNode(int i, int j, int x, int y, boolean[][] grid){
         int h = grid.length;
         int w = grid[0].length;
 
