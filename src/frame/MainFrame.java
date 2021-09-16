@@ -44,6 +44,7 @@ public class MainFrame {
     private final ButtonGroup buttonGroup;
     private JComboBox<String> combo;
     private JTextArea resultField;
+    private JCheckBox checkBox;
 
     private final Point startPoint;
     private final Point endPoint;
@@ -312,6 +313,10 @@ public class MainFrame {
         });
         panel.add(clearButton);
 
+        checkBox = new JCheckBox("Diagonal Move");
+        checkBox.setBounds(475, 5, 180, 25);
+        checkBox.setSelected(false);
+        panel.add(checkBox);
     }
 
     private boolean addTale(int x, int y, TaleType type, boolean drag){
@@ -396,7 +401,7 @@ public class MainFrame {
         int start = (startPoint.y * WIDTH) + startPoint.x;
         int end = (endPoint.y * WIDTH) + endPoint.x;
 
-        Graph g = new Graph(grid);
+        Graph g = new Graph(grid, checkBox.isSelected());
         algo.solve(g, start);
         if (algo.checkPath(end)) {
             List<Integer> backtrace = algo.getBacktrace(start, end);

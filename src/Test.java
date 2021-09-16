@@ -16,7 +16,7 @@ public class Test {
         int start = 0;
         int end = 1;
 
-        Graph g = new Graph(grid);
+        Graph g = new Graph(grid, false);
         PathFindingAlgorithm algo = new DFS();
         algo.solve(g, start);
 
